@@ -21,7 +21,7 @@ jobs:
         run: pip install requests
 
       - name: Run AdGuard to Surge converter
-        run: python3 scripts/adguard2surge.py
+        run: python3 script/adguard2surge.py
 
       - name: Commit & Push rules
         run: |
