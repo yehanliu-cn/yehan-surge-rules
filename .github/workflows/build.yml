@@ -1,30 +1,32 @@
-name: Build Rules
+name: AdGuard 2 Surge
 
 on:
-  workflow_dispatch:    # 手动触发
-  push:                 # 只要有提交就触发
-    branches:
-      - master
+  workflow_dispatch:
+  push:
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: List all files for debug
-        run: ls -lah
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
 
-      # 如需自动生成或转换，可以在这里加shell/python命令
-      # - name: Convert AdGuard to Surge rules (example, delete if not needed)
-      #   run: |
-      #     bash script/my_convert_script.sh
+      - name: Install requests
+        run: pip install requests
 
-      # 如需要上传产物，可以加下面（示例）：
-      # - name: Upload result
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: rules
-      #     path: ./output/
+      - name: Run AdGuard to Surge converter
+        run: python3 scripts/adguard2surge.py
+
+      - name: Commit & Push rules
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add output/surge.txt
+          git commit -m "auto: update surge rules" || echo "No changes"
+          git push
