@@ -1,10 +1,11 @@
-name: Build Rules
+name: AdGuardToSurge
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
+    paths:
+      - 'scripts/adguard2surge.py'
+      - 'source/custom/Advertising/source.list'
 
 jobs:
   build:
@@ -12,23 +13,21 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: |
-          pip install requests
+        run: pip install requests
 
-      - name: Run adguard2surge.py
-        run: |
-          python script/adguard2surge.py
+      - name: Run adguard2surge script
+        run: python3 scripts/adguard2surge.py
 
-      - name: Upload converted rules
-        uses: actions/upload-artifact@v4   # ✅ 改为 v4
+      - name: Upload surge.list
+        uses: actions/upload-artifact@v4
         with:
-          name: SurgeList
+          name: surge.list
           path: output/surge.list
