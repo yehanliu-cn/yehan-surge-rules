@@ -1,59 +1,60 @@
 import os
 import requests
 
-source_file = "source/custom/Advertising/source.list"
-output_file = "output/surge.list"
+# 一定要和你仓库里的路径一致！
+SOURCE_LIST = "source/custom/Advertising/source.list"
+OUTPUT_FILE = "output/surge.list"
 
-def convert_adguard_to_surge_rule(adguard_text):
-    lines = adguard_text.splitlines()
-    surge_rules = []
-    for line in lines:
+def fetch_and_convert(url):
+    """下载单个 AdGuard 规则，并转成 Surge 格式"""
+    try:
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+    except Exception as e:
+        print(f"❌ 下载失败 {url}: {e}")
+        return []
+
+    out = []
+    for line in r.text.splitlines():
         line = line.strip()
-        if not line or line.startswith('!') or line.startswith('#'):
+        if not line or line.startswith(("!", "#", "[")):
             continue
-        if line.startswith('||'):
-            domain = line[2:]
-            if '/' in domain:
-                domain = domain.split('/')[0]
-            surge_rules.append(f'DOMAIN-SUFFIX,{domain},REJECT')
-        elif line.startswith('|') and line.endswith('|'):
-            domain = line[1:-1]
-            surge_rules.append(f'DOMAIN,{domain},REJECT')
-        elif line.startswith('|'):
-            domain = line[1:]
-            surge_rules.append(f'DOMAIN,{domain},REJECT')
-        elif line.startswith('@@'):
-            # 忽略白名单规则
-            continue
+        if line.startswith("||"):
+            domain = line[2:].split("^")[0]
+            out.append(f"DOMAIN-SUFFIX,{domain},REJECT")
+        elif line.startswith("|") and line.endswith("|"):
+            host = line[1:-1]
+            out.append(f"DOMAIN,{host},REJECT")
+        elif line.startswith("/"):
+            regex = line.strip("/").replace("\\/", "/")
+            out.append(f"URL-REGEX,{regex},REJECT")
         else:
-            surge_rules.append(f'DOMAIN-SUFFIX,{line},REJECT')
-    return '\n'.join(surge_rules)
+            out.append(f"DOMAIN-SUFFIX,{line},REJECT")
+    return out
 
 def main():
-    if not os.path.exists(source_file):
-        print(f"{source_file} not found.")
+    # 检查 source.list 是否存在
+    if not os.path.isfile(SOURCE_LIST):
+        print(f"❌ 找不到订阅源文件：{SOURCE_LIST}")
         return
 
-    with open(source_file, 'r') as f:
-        urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    # 读取所有订阅链接
+    with open(SOURCE_LIST, encoding="utf-8") as f:
+        urls = [l.strip() for l in f if l.strip() and not l.startswith("#")]
 
     all_rules = []
-    for url in urls:
-        try:
-            print(f"Fetching: {url}")
-            resp = requests.get(url, timeout=15)
-            resp.raise_for_status()
-            adguard_text = resp.text
-            surge_rule = convert_adguard_to_surge_rule(adguard_text)
-            all_rules.append(surge_rule)
-        except Exception as e:
-            print(f"Error processing {url}: {e}")
+    for u in urls:
+        print(f"🔄 处理：{u}")
+        all_rules += fetch_and_convert(u)
 
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, 'w') as f:
-        f.write('\n'.join(all_rules))
+    # 确保输出目录存在
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
 
-    print(f"Conversion complete. Output saved to {output_file}")
+    # 写入 surge.list
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write("\n".join(all_rules))
+
+    print(f"✅ 完成！已生成：{OUTPUT_FILE} （共 {len(all_rules)} 条规则）")
 
 if __name__ == "__main__":
     main()
