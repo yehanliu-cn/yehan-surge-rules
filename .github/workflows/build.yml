@@ -1,23 +1,20 @@
-# 文件路径：.github/workflows/build.yml
 name: AdGuard2Surge
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
   convert:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout 仓库
         uses: actions/checkout@v3
-
-      - name: 显示全部文件（调试用）
-        run: |
-          echo "—— 当前工作区 ——"
-          ls -R .
+        with:
+          # 允许后续把文件推回去
+          persist-credentials: true
 
       - name: 安装 Python
         uses: actions/setup-python@v4
@@ -30,11 +27,10 @@ jobs:
       - name: 运行转换脚本
         run: python script/adguard2surge.py
 
-      - name: 查看 output 目录
-        run: ls -lah output
-
-      - name: 上传 surge.list 产物
-        uses: actions/upload-artifact@v4
+      - name: 提交并推送 surge.list 回仓库
+        uses: EndBug/add-and-commit@v9
         with:
-          name: surge.list
-          path: output/surge.list
+          author_name: github-actions
+          author_email: actions@github.com
+          message: "🔄 Update surge.list"
+          add: "output/surge.list"
