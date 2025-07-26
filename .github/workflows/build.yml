@@ -1,4 +1,4 @@
-name: Convert AdGuard to Surge
+name: AdGuard2Surge
 
 on:
   workflow_dispatch:
@@ -7,22 +7,27 @@ on:
       - master
 
 jobs:
-  build:
+  convert:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout 仓库
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: 安装 Python 依赖
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+      - run: pip install requests
 
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Run conversion script
+      - name: 运行转换脚本
         run: python script/adguard2surge.py
 
-      - name: Show output
-        run: cat output/surge.list
+      - name: 列出 output 以确认
+        run: ls -lah output
+
+      - name: 上传产物 surge.list
+        uses: actions/upload-artifact@v3
+        with:
+          name: surge-list
+          path: output/surge.list
