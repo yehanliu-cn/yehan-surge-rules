@@ -1,37 +1,30 @@
 name: Build Rules
 
 on:
-  workflow_dispatch:     # 支持手动触发
-  schedule:
-    - cron: '0 1 * * *' # 每天凌晨 1 点自动执行
+  workflow_dispatch:    # 手动触发
+  push:                 # 只要有提交就触发
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: List all files for debug
+        run: ls -lah
 
-      - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+      # 如需自动生成或转换，可以在这里加shell/python命令
+      # - name: Convert AdGuard to Surge rules (example, delete if not needed)
+      #   run: |
+      #     bash script/my_convert_script.sh
 
-      - name: Build rules
-        run: npm run build
-
-      - name: Commit & Push changes
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add dist
-          git diff --cached --quiet || git commit -m "auto: update rules"
-          git push
+      # 如需要上传产物，可以加下面（示例）：
+      # - name: Upload result
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: rules
+      #     path: ./output/
