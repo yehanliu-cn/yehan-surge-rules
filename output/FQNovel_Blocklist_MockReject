@@ -1,0 +1,52 @@
+#!name=FQNovel_Blocklist_MockReject
+#!desc=Converted from changzhaoCZ/fqnovel-adrules (fq2.txt) — use Map Local Mock reject
+#!version=1.2
+#!author=ChatGPT
+#!homepage=https://github.com/changzhaoCZ/fqnovel-adrules
+
+# --------------------------
+# ❶ 先列出需要放行的域名
+# --------------------------
+[Script]
+# 生成可读白名单（供后期维护，可删除）
+allow_domain_list = [
+  "n98-lf-novel-saveu-ncdn.fqnovelstatic.com",
+  "p*-novel1-sign.byteimg.com",
+  "p*-novel-sign.byteimg.com",
+  "security.snssdk.com",
+  "api5-normal-sinfonlinec.fqnovel.com",
+  "lf-normal-gr-sourcecdn.bytegecko.com",
+  "reading.snssdk.com",
+  "lf-fe.fqnovelstatic.com",
+  "api*-sinfnormal.fqnovel.com",
+  "tnc*-*.zijieapi.com",
+  "p*-reading-sign.fqnovelpic.com",
+  "api*-normal-sinfonline*.fqnovel.com",
+  "lf-sourcecdn-tos.bytegecko.com",
+  "*-novelapp.fqnovelvod.com",
+  "*-fq-tts.fqnovelvod.com"
+]
+
+# --------------------------
+# ❷ Mock Reject：除白名单外全部拒绝
+# --------------------------
+[Map Local]
+# 白名单——按需放行（匹配顺序优先）
+^https?:\/\/n98-lf-novel-saveu-ncdn\.fqnovelstatic\.com\/.*$ skip-filter=true
+^https?:\/\/p[0-9a-z\-]*-novel1-sign\.byteimg\.com\/.*$ skip-filter=true
+^https?:\/\/p[0-9a-z\-]*-novel-sign\.byteimg\.com\/.*$ skip-filter=true
+^https?:\/\/security\.snssdk\.com\/.*$ skip-filter=true
+^https?:\/\/api5-normal-sinfonlinec\.fqnovel\.com\/reading\/bookapi\/.*$ skip-filter=true
+^https?:\/\/lf-normal-gr-sourcecdn\.bytegecko\.com\/.*$ skip-filter=true
+^https?:\/\/reading\.snssdk\.com\/.*$ skip-filter=true
+^https?:\/\/lf-fe\.fqnovelstatic\.com\/.*$ skip-filter=true
+^https?:\/\/api[0-9a-z\-]*-sinfnormal\.fqnovel\.com\/.*$ skip-filter=true
+^https?:\/\/tnc[0-9a-z\-]*-.*\.zijieapi\.com\/.*$ skip-filter=true
+^https?:\/\/p[0-9a-z\-]*-reading-sign\.fqnovelpic\.com\/.*$ skip-filter=true
+^https?:\/\/api[0-9a-z\-]*-normal-sinfonline.*\.fqnovel\.com\/.*$ skip-filter=true
+^https?:\/\/lf-sourcecdn-tos\.bytegecko\.com\/.*$ skip-filter=true
+^https?:\/\/[0-9a-z\-]*-novelapp\.fqnovelvod\.com\/.*$ skip-filter=true
+^https?:\/\/[0-9a-z\-]*-fq-tts\.fqnovelvod\.com\/.*$ skip-filter=true
+
+# 拦截——其他全部以 Mock reject 方式处理
+^https?:\/\/.*$ reject
