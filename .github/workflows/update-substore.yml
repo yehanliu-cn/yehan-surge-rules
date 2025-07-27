@@ -1,42 +1,56 @@
-# .github/workflows/subscription.yml
-name: Build & Deploy Subscriptions
+# .github/workflows/substore.yml
+name: Build & Deploy Sub-Store Subscription
 
 on:
-  push:
-    branches: [ master ]
   workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
-  build:
+  substore:
+    # ubuntu-latest 自带 Docker，所以不需要自己 apt-get 安装
     runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:24.0.5
+        options: >-
+          --privileged
+          # 让容器内的 Docker Engine 可以正常启动
+        ports:
+          - 3000:3000      # 让我们能通过 localhost:3000 访问 Sub-Store
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Install Docker (needed for Sub-Store)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-
-      - name: Install Sub-Store-Manager-Cli
+      - name: Install Sub‑Store‑Manager‑Cli (ssm)
         run: |
           curl -sSL https://sub-store-org.github.io/resource/ssm/install.sh | bash
+          # 确保 ssm 在 PATH 里
+          ls -l ~/.local/bin/ssm
 
-      - name: Start Sub-Store (headless)
+      - name: Prepare subscriptions.list
+        # 复制你仓库里的机场订阅列表到 ssm 配置目录
         run: |
-          ssm new --name mysub --port 3000
-          # 把你的 subscriptions.list 复制到容器挂载目录
           mkdir -p ~/.ssm/mysub/config
-          cp source/custom/Advertising/subscriptions.list ~/.ssm/mysub/config/
-          ssm start --name mysub
+          cp source/custom/Advertising/subscriptions.list ~/.ssm/mysub/config/subscriptions.list
 
-      - name: Wait for Sub-Store to merge
-        run: sleep 30
+      - name: Start Sub-Store instance
+        run: |
+          # 新建一个名为 mysub 的实例，监听 3000 端口
+          ~/.local/bin/ssm new --name mysub --port 3000
+          ~/.local/bin/ssm start --name mysub
 
-      - name: Download generated Surge rules
+      - name: Wait for Sub-Store to warm up
+        run: sleep 15
+
+      - name: Download generated Surge subscription
         run: |
           curl -sSL http://localhost:3000/subscription/surge > output/substore.list
 
-      - name: Commit & Push new substore.list
+      - name: Commit & Push substore.list
         uses: EndBug/add-and-commit@v9
         with:
           message: "chore: update substore.list"
