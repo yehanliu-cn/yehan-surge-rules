@@ -9,48 +9,23 @@ jobs:
   substore:
     runs-on: ubuntu-latest
 
-    # Tell Docker CLI to talk to the DinD daemon
-    env:
-      DOCKER_HOST: tcp://localhost:2375
-
-    services:
-      docker:
-        image: docker:24.0.5-dind
-        # 下面的 options 是 docker run 启动 dind 容器时要加的 flag
-        options: >-
-          --privileged
-          -p 2375:2375
-          -p 3000:3000
-        env:
-          # Disable TLS so it just listens on TCP
-          DOCKER_TLS_CERTDIR: ""
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Prepare folders
+      - name: Ensure folders exist
         run: |
           mkdir -p source/custom/Advertising
           mkdir -p output
 
-      - name: Start Sub‑Store container
+      - name: Download Surge subscription from Sub‑Store
         run: |
-          docker pull sub-store-org/sub-store:latest
-          docker rm -f substore || true
-          docker run -d --name substore \
-            -v "${{ github.workspace }}/source/custom/Advertising/subscriptions.list:/ssm/config/subscriptions.list" \
-            sub-store-org/sub-store:latest
-
-      - name: Wait for Sub‑Store startup
-        run: sleep 15
-
-      - name: Download Surge subscription
-        run: |
-          curl -sSL http://localhost:3000/subscription/surge \
+          # 用你自己的 Collection ID 替换这里的 MySub
+          curl -sSL "https://sub.store/download/collection/MySub" \
             -o output/substore.list
-          echo "▶ Preview:"
-          head -n5 output/substore.list
+
+      - name: Preview first lines
+        run: head -n5 output/substore.list
 
       - name: Commit & Push substore.list
         uses: EndBug/add-and-commit@v9
