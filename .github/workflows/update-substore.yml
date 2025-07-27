@@ -1,34 +1,34 @@
-name: Update Sub-Store Subscription
+name: 更新 Substore 列表
 
+# 手动触发 & 每小时一次
 on:
-  push:
-    branches: [ master ]
   workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
 
 jobs:
-  substore:
+  update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 拉取仓库
         uses: actions/checkout@v3
 
-      - name: Ensure folders exist
-        run: |
-          mkdir -p source/custom/Advertising
-          mkdir -p output
+      - name: 安装 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-      - name: Download Surge subscription from Sub‑Store
-        run: |
-          # 用你自己的 Collection ID 替换这里的 MySub
-          curl -sSL "https://sub.store/download/collection/MySub" \
-            -o output/substore.list
+      - name: 安装依赖
+        run: pip install requests
 
-      - name: Preview first lines
-        run: head -n5 output/substore.list
+      - name: 运行 合并脚本
+        run: python script/substore.py
 
-      - name: Commit & Push substore.list
+      - name: 提交并推送 substore.list
         uses: EndBug/add-and-commit@v9
         with:
-          message: chore: update substore.list
-          add: output/substore.list
+          author_name: github-actions
+          author_email: actions@github.com
+          message: "📦 更新 substore.list"
+          add: "output/substore.list"
