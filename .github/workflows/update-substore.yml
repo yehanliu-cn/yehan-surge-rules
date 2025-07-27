@@ -1,6 +1,5 @@
 name: Update Sub-Store Subscription
 
-# 手动或 push 到 master 时触发
 on:
   push:
     branches: [ master ]
@@ -10,54 +9,50 @@ jobs:
   substore:
     runs-on: ubuntu-latest
 
-    # 使用 DinD（Docker‑in‑Docker）服务启动 Sub‑Store
+    # Tell Docker CLI to talk to the DinD daemon
+    env:
+      DOCKER_HOST: tcp://localhost:2375
+
     services:
       docker:
         image: docker:24.0.5-dind
-        # 这里把 privileged 放到 options 里
+        # 下面的 options 是 docker run 启动 dind 容器时要加的 flag
         options: >-
           --privileged
           -p 2375:2375
           -p 3000:3000
-        # 禁用 TLS，否则需要更多配置
         env:
+          # Disable TLS so it just listens on TCP
           DOCKER_TLS_CERTDIR: ""
-
-    # 告诉 Docker CLI 去哪里找守护进程
-    env:
-      DOCKER_HOST: tcp://localhost:2375
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Ensure directories exist
+      - name: Prepare folders
         run: |
           mkdir -p source/custom/Advertising
           mkdir -p output
 
-      - name: Launch Sub-Store container
+      - name: Start Sub‑Store container
         run: |
-          # 拉取官方镜像（请根据实际官方仓库和 Tag 调整）
           docker pull sub-store-org/sub-store:latest
-          # 如果有同名旧容器就先删掉
           docker rm -f substore || true
-          # 启动，并挂载你的机场订阅文件
           docker run -d --name substore \
             -v "${{ github.workspace }}/source/custom/Advertising/subscriptions.list:/ssm/config/subscriptions.list" \
             sub-store-org/sub-store:latest
 
-      - name: Wait for Sub-Store to be ready
+      - name: Wait for Sub‑Store startup
         run: sleep 15
 
       - name: Download Surge subscription
         run: |
           curl -sSL http://localhost:3000/subscription/surge \
             -o output/substore.list
-          echo "👉 output/substore.list (first 5 lines):"
+          echo "▶ Preview:"
           head -n5 output/substore.list
 
-      - name: Commit & Push updated subscription
+      - name: Commit & Push substore.list
         uses: EndBug/add-and-commit@v9
         with:
           message: chore: update substore.list
