@@ -1,48 +1,43 @@
-name: 更新多机场订阅
+# .github/workflows/subscription.yml
+name: Build & Deploy Subscriptions
 
 on:
-  workflow_dispatch:
   push:
-    paths:
-      - 'source/custom/Advertising/subscriptions.list'
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. 拉取仓库代码，并保留凭据以便后续推回
-      - name: Checkout 仓库
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: true
+      - uses: actions/checkout@v3
 
-      # 2. 安装 Node.js 环境
-      - name: 设置 Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      # 3. 安装 Sub-Store CLI
-      - name: 安装 Sub‑Store
-        run: npm install -g @sub-store/cli
-
-      # 4. 合并 subscriptions.list 中的所有订阅成一个 Surge 配置
-      - name: 生成 substore.conf
+      - name: Install Docker (needed for Sub-Store)
         run: |
-          mkdir -p output
-          sub-store build \
-            --input source/custom/Advertising/subscriptions.list \
-            --target Surge \
-            --output output/substore.conf
+          sudo apt-get update
+          sudo apt-get install -y docker.io
 
-      # 5. 显示前几行，确认文件内容
-      - name: 预览 output/substore.conf
-        run: head -n 10 output/substore.conf
+      - name: Install Sub-Store-Manager-Cli
+        run: |
+          curl -sSL https://sub-store-org.github.io/resource/ssm/install.sh | bash
 
-      # 6. 提交并推送回仓库
-      - name: Commit & Push substore.conf
-        uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Start Sub-Store (headless)
+        run: |
+          ssm new --name mysub --port 3000
+          # 把你的 subscriptions.list 复制到容器挂载目录
+          mkdir -p ~/.ssm/mysub/config
+          cp source/custom/Advertising/subscriptions.list ~/.ssm/mysub/config/
+          ssm start --name mysub
+
+      - name: Wait for Sub-Store to merge
+        run: sleep 30
+
+      - name: Download generated Surge rules
+        run: |
+          curl -sSL http://localhost:3000/subscription/surge > output/substore.list
+
+      - name: Commit & Push new substore.list
+        uses: EndBug/add-and-commit@v9
         with:
-          commit_message: "ci: 更新合并后的多机场订阅"
-          file_pattern: "output/substore.conf"
+          message: "chore: update substore.list"
+          add: "output/substore.list"
