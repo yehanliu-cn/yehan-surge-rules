@@ -2,53 +2,59 @@
 name: Build & Deploy Sub-Store Subscription
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - master
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   substore:
-    # ubuntu-latest 自带 Docker，所以不需要自己 apt-get 安装
     runs-on: ubuntu-latest
-
+    # 声明 DinD 服务
     services:
       docker:
-        image: docker:24.0.5
-        options: >-
-          --privileged
-          # 让容器内的 Docker Engine 可以正常启动
+        image: docker:24.0.5-dind
+        privileged: true
+        # 暴露 Docker API 端口 2375，和 Sub-Store 的 3000
         ports:
-          - 3000:3000      # 让我们能通过 localhost:3000 访问 Sub-Store
+          - 2375:2375
+          - 3000:3000
+
+    env:
+      # 指向上面声明的 DinD 服务
+      DOCKER_HOST: tcp://localhost:2375
+      DOCKER_TLS_VERIFY: "0"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Sub‑Store‑Manager‑Cli (ssm)
-        run: |
-          curl -sSL https://sub-store-org.github.io/resource/ssm/install.sh | bash
-          # 确保 ssm 在 PATH 里
-          ls -l ~/.local/bin/ssm
-
       - name: Prepare subscriptions.list
-        # 复制你仓库里的机场订阅列表到 ssm 配置目录
         run: |
-          mkdir -p ~/.ssm/mysub/config
-          cp source/custom/Advertising/subscriptions.list ~/.ssm/mysub/config/subscriptions.list
+          # 你的机场订阅源文件路径
+          mkdir -p source/custom/Advertising
+          # 确保你的 subscriptions.list 放在这里：
+          # source/custom/Advertising/subscriptions.list
+          ls -lah source/custom/Advertising
 
-      - name: Start Sub-Store instance
+      - name: Launch Sub-Store container
         run: |
-          # 新建一个名为 mysub 的实例，监听 3000 端口
-          ~/.local/bin/ssm new --name mysub --port 3000
-          ~/.local/bin/ssm start --name mysub
+          # 这里用官方 sub-store 镜像，替换成最新 tag
+          docker pull sub-store-org/sub-store:latest
+          docker rm -f substore || true
+          docker run -d \
+            --name substore \
+            -p 3000:3000 \
+            -v $PWD/source/custom/Advertising/subscriptions.list:/ssm/config/subscriptions.list \
+            sub-store-org/sub-store:latest
 
-      - name: Wait for Sub-Store to warm up
+      - name: Wait for Sub-Store to be ready
         run: sleep 15
 
       - name: Download generated Surge subscription
         run: |
-          curl -sSL http://localhost:3000/subscription/surge > output/substore.list
+          curl -sSL http://localhost:3000/subscription/surge -o output/substore.list
+          echo "=> output/substore.list:"
+          head -n5 output/substore.list
 
       - name: Commit & Push substore.list
         uses: EndBug/add-and-commit@v9
