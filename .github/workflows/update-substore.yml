@@ -1,6 +1,6 @@
-# .github/workflows/substore.yml
-name: Build & Deploy Sub-Store Subscription
+name: Update Sub-Store Subscription
 
+# 手动或 push 到 master 时触发
 on:
   push:
     branches: [ master ]
@@ -9,55 +9,56 @@ on:
 jobs:
   substore:
     runs-on: ubuntu-latest
-    # 声明 DinD 服务
+
+    # 使用 DinD（Docker‑in‑Docker）服务启动 Sub‑Store
     services:
       docker:
         image: docker:24.0.5-dind
-        privileged: true
-        # 暴露 Docker API 端口 2375，和 Sub-Store 的 3000
-        ports:
-          - 2375:2375
-          - 3000:3000
+        # 这里把 privileged 放到 options 里
+        options: >-
+          --privileged
+          -p 2375:2375
+          -p 3000:3000
+        # 禁用 TLS，否则需要更多配置
+        env:
+          DOCKER_TLS_CERTDIR: ""
 
+    # 告诉 Docker CLI 去哪里找守护进程
     env:
-      # 指向上面声明的 DinD 服务
       DOCKER_HOST: tcp://localhost:2375
-      DOCKER_TLS_VERIFY: "0"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Prepare subscriptions.list
+      - name: Ensure directories exist
         run: |
-          # 你的机场订阅源文件路径
           mkdir -p source/custom/Advertising
-          # 确保你的 subscriptions.list 放在这里：
-          # source/custom/Advertising/subscriptions.list
-          ls -lah source/custom/Advertising
+          mkdir -p output
 
       - name: Launch Sub-Store container
         run: |
-          # 这里用官方 sub-store 镜像，替换成最新 tag
+          # 拉取官方镜像（请根据实际官方仓库和 Tag 调整）
           docker pull sub-store-org/sub-store:latest
+          # 如果有同名旧容器就先删掉
           docker rm -f substore || true
-          docker run -d \
-            --name substore \
-            -p 3000:3000 \
-            -v $PWD/source/custom/Advertising/subscriptions.list:/ssm/config/subscriptions.list \
+          # 启动，并挂载你的机场订阅文件
+          docker run -d --name substore \
+            -v "${{ github.workspace }}/source/custom/Advertising/subscriptions.list:/ssm/config/subscriptions.list" \
             sub-store-org/sub-store:latest
 
       - name: Wait for Sub-Store to be ready
         run: sleep 15
 
-      - name: Download generated Surge subscription
+      - name: Download Surge subscription
         run: |
-          curl -sSL http://localhost:3000/subscription/surge -o output/substore.list
-          echo "=> output/substore.list:"
+          curl -sSL http://localhost:3000/subscription/surge \
+            -o output/substore.list
+          echo "👉 output/substore.list (first 5 lines):"
           head -n5 output/substore.list
 
-      - name: Commit & Push substore.list
+      - name: Commit & Push updated subscription
         uses: EndBug/add-and-commit@v9
         with:
-          message: "chore: update substore.list"
-          add: "output/substore.list"
+          message: chore: update substore.list
+          add: output/substore.list
