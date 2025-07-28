@@ -11,7 +11,7 @@
 # 模块名称（可按需修改，不要写具体 App 名称）
 name = "通用 App 更新屏蔽模块"
 # 每次修改可以自增版本号
-version = 1
+version = 1.10
 # 简要说明
 description = "可在此模块的 [Rule] 段添加多个 App 更新检测屏蔽规则"
 
@@ -20,17 +20,16 @@ description = "可在此模块的 [Rule] 段添加多个 App 更新检测屏蔽�
 # 语法格式（屏蔽 App Store lookup 接口）：
 # URL-REGEX,https://itunes\\.apple\\.com/lookup\\?id=<AppID>,REJECT
 
-# 屏蔽“彩云天气 Pro”（AppID=1067198688） 
-# 屏蔽“彩云天气 Pro”（AppID=1067198688）的更新检测： 
-URL-REGEX,https://itunes\.apple\.com/lookup\?id=1067198688,REJECT
-# —— 精确拦截彩云天气 Pro 安装包下载 —— 
-URL-REGEX,https://appldnld\.apple\.com/.*1067198688.*\.ipa,REJECT
+# —— 屏蔽“彩云天气 Pro”（AppID=1067198688）的版本查询 ——  
+URL-REGEX,https://itunes\.apple\.com/.*/lookup\?id=1067198688,REJECT  
+# —— 精确拦截彩云天气 Pro 安装包下载 ——  
+URL-REGEX,https://appldnld\.apple\.com/.*1067198688.*\.ipa,REJECT  
 
-# 屏蔽“飞猪旅行”（AppID=453691481）
-# 屏蔽“飞猪旅行”（AppID=453691481）的版本查询
-URL-REGEX,https://itunes\.apple\.com/lookup\?id=453691481,REJECT
-# 精确拦截飞猪旅行安装包下载
-URL-REGEX,https://appldnld\.apple\.com/.*453691481.*\.ipa,REJECT
+# —— 屏蔽“飞猪旅行”（AppID=453691481）的版本查询 ——  
+URL-REGEX,https://itunes\.apple\.com/.*/lookup\?id=453691481,REJECT  
+# —— 精确拦截飞猪旅行安装包下载 ——  
+URL-REGEX,https://appldnld\.apple\.com/.*453691481.*\.ipa,REJECT  
+
 
 # —— 用法 —— #
 # 1. 复制上面示例行，去掉前面的“#”，
