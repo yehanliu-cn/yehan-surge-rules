@@ -1,3 +1,7 @@
+#!name=通用 App 更新屏蔽模块
+#!desc=屏蔽 App Store 指定应用的更新检测与安装包下载
+#!system=ios
+
 ########################################
 # Surge 通用模块：屏蔽 App Store 指定应用更新检测
 # 文件名：BlockAppUpdates.sgmodule
