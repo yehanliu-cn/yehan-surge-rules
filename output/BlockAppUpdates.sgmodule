@@ -16,8 +16,12 @@ description = "可在此模块的 [Rule] 段添加多个 App 更新检测屏蔽�
 # 语法格式（屏蔽 App Store lookup 接口）：
 # URL-REGEX,https://itunes\\.apple\\.com/lookup\\?id=<AppID>,REJECT
 
-# 屏蔽“彩云天气 Pro”（AppID=1067198688）的更新检测：
+# 屏蔽“彩云天气 Pro”（AppID=1067198688） 
+# 屏蔽“彩云天气 Pro”（AppID=1067198688）的更新检测： 
 URL-REGEX,https://itunes\.apple\.com/lookup\?id=1067198688,REJECT
+# —— 精确拦截彩云天气 Pro 安装包下载 —— 
+URL-REGEX,https://appldnld\.apple\.com/.*1067198688.*\.ipa,REJECT
+
 
 # —— 用法 —— #
 # 1. 复制上面示例行，去掉前面的“#”，
