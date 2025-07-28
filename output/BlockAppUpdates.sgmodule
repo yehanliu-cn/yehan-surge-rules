@@ -26,6 +26,11 @@ URL-REGEX,https://itunes\.apple\.com/lookup\?id=1067198688,REJECT
 # —— 精确拦截彩云天气 Pro 安装包下载 —— 
 URL-REGEX,https://appldnld\.apple\.com/.*1067198688.*\.ipa,REJECT
 
+# 屏蔽“飞猪旅行”（AppID=453691481）
+# 屏蔽“飞猪旅行”（AppID=453691481）的版本查询
+URL-REGEX,https://itunes\.apple\.com/lookup\?id=453691481,REJECT
+# 精确拦截飞猪旅行安装包下载
+URL-REGEX,https://appldnld\.apple\.com/.*453691481.*\.ipa,REJECT
 
 # —— 用法 —— #
 # 1. 复制上面示例行，去掉前面的“#”，
