@@ -1,0 +1,28 @@
+########################################
+# Surge 通用模块：屏蔽 App Store 指定应用更新检测
+# 文件名：BlockAppUpdates.sgmodule
+########################################
+
+[General]
+# 模块名称（可按需修改，不要写具体 App 名称）
+name = "通用 App 更新屏蔽模块"
+# 每次修改可以自增版本号
+version = 1
+# 简要说明
+description = "可在此模块的 [Rule] 段添加多个 App 更新检测屏蔽规则"
+
+[Rule]
+# —— 在下面添加规则行 —— #
+# 语法格式（屏蔽 App Store lookup 接口）：
+# URL-REGEX,https://itunes\\.apple\\.com/lookup\\?id=<AppID>,REJECT
+
+# 屏蔽“彩云天气 Pro”（AppID=1067198688）的更新检测：
+URL-REGEX,https://itunes\.apple\.com/lookup\?id=1067198688,REJECT
+
+# —— 用法 —— #
+# 1. 复制上面示例行，去掉前面的“#”，
+# 2. 将 <AppID> 替换成目标应用的数字 ID，
+# 3. 可按需多行追加不同 AppID 的规则，
+# 4. 保存后 Surge 会自动生效。
+
+# （在此处粘贴你要屏蔽的每个 App 的规则）
