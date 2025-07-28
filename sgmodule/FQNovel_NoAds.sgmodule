@@ -1,36 +1,38 @@
 #!name=FQNovel_NoAds
-#!desc=番茄小说 iOS 去广告（最终版 · 纯RULE）
+#!desc=番茄小说 iOS 去广告（最终纯 RULE · 证书锁安全）
 #!version=2025.07.28
 #!author=YourName
+
 [Rule]
 
-# —— 电商 / 金融广告接口 —— 
-DOMAIN-KEYWORD,ecombdapi,REJECT-TINYGIF     # ecom3-… ecom5-… 全拦
-DOMAIN-KEYWORD,isaas,REJECT-TINYGIF         # isaas*-*.ecombdapi.com
-DOMAIN-KEYWORD,ads.,REJECT-TINYGIF          # ads5-normal-lf.zijieapi.com 等
+############ ① 保护性白名单（必须最先，防 tnc 被误杀） ############
+DOMAIN-KEYWORD,tnc,DIRECT                       # 日志上报节点
+
+############ ② 置顶黑名单（会被 normal-lf 白名单抢走的广告域） ########
+DOMAIN-SUFFIX,zijieapi.com,REJECT-TINYGIF       # 所有字节广告 API
+DOMAIN-KEYWORD,ads-normal-lf,REJECT-TINYGIF     # ads5/ads6…
+DOMAIN-KEYWORD,ecombdapi,REJECT-TINYGIF         # ecom* / isaas*…
 DOMAIN-KEYWORD,polaris,REJECT-TINYGIF
 DOMAIN-KEYWORD,mssdk,REJECT-TINYGIF
 DOMAIN-KEYWORD,bsync,REJECT-TINYGIF
+DOMAIN-KEYWORD,imapi,REJECT-TINYGIF
+DOMAIN-KEYWORD,saveu,REJECT-TINYGIF
+DOMAIN-KEYWORD,ad-sign,REJECT-TINYGIF           # p*-ad-sign.byteimg.com
 DOMAIN-KEYWORD,misc-lf,REJECT-TINYGIF
-DOMAIN-SUFFIX,zijieapi.com,REJECT-TINYGIF
-DOMAIN-KEYWORD,ad-sign,REJECT-TINYGIF       # p*-ad-sign.byteimg.com
 DOMAIN-SUFFIX,ecombdimg.com,REJECT-TINYGIF
 
-DOMAIN-KEYWORD,ads*-normal-lf,REJECT-TINYGIF
-# 放在广告黑名单内、白名单之前
-DOMAIN-KEYWORD,ecombdapi,REJECT-TINYGIF
-######## ① 功能白名单 —— 必须先匹配，保证图片/视频正常 ########
+############ ③ 功能白名单（正文 / 图片 / 视频 / 日志） ##############
 # 业务 API
-DOMAIN,api5-normal-lf.fqnovel.com,DIRECT
-DOMAIN,api5-normal-sinfonlinec.fqnovel.com,DIRECT
 DOMAIN-KEYWORD,normal-lf,DIRECT
 DOMAIN-KEYWORD,normal-sinfonline,DIRECT
 DOMAIN-SUFFIX,sinfnormal.fqnovel.com,DIRECT
+DOMAIN,api5-normal-lf.fqnovel.com,DIRECT
+DOMAIN,api5-normal-sinfonlinec.fqnovel.com,DIRECT
 
-# 章节 / 评论 / 头像 / 图标
-DOMAIN-KEYWORD,reading-sign,DIRECT                 # p9-reading-sign…  &  p3-reading-sign…
+# 图床 & 图标
+DOMAIN-KEYWORD,reading-sign,DIRECT
 DOMAIN-SUFFIX,lf3-reading.fqnovelpic.com,DIRECT
-DOMAIN-SUFFIX,novel.byteimg.com,DIRECT             # p3-novel…  & 其他章节插图
+DOMAIN-SUFFIX,novel.byteimg.com,DIRECT
 DOMAIN-SUFFIX,novel-user.byteimg.com,DIRECT
 DOMAIN-SUFFIX,novel-file.byteimg.com,DIRECT
 DOMAIN-SUFFIX,novel-story.byteimg.com,DIRECT
@@ -39,39 +41,22 @@ DOMAIN-SUFFIX,novel-category.bytegecko.com,DIRECT
 DOMAIN-KEYWORD,avatar.douyinpic.com,DIRECT
 
 # 阅读视频 / 听书
-DOMAIN-SUFFIX,novelapp.fqnovelvod.com,DIRECT       # v3- / v26- 等
+DOMAIN-SUFFIX,novelapp.fqnovelvod.com,DIRECT
 DOMAIN-SUFFIX,reading-video.fqnovelvod.com,DIRECT
 
-# 日志 & 上报（不影响广告）
-DOMAIN-KEYWORD,tnc,DIRECT
+# 其它直连
 DOMAIN,rtlog5-applog-lf.fqnovel.com,DIRECT
 DOMAIN,log0-applog-lf.fqnovel.com,DIRECT
 DOMAIN,is.snssdk.com,DIRECT
 DOMAIN,aweme.snssdk.com,DIRECT
 DOMAIN,tp-pay.snssdk.com,DIRECT
-DOMAIN,webcast5-open-lf.douyin.com,DIRECT          # 若你不需要直播，可改为 REJECT
+DOMAIN,webcast5-open-lf.douyin.com,DIRECT       # 不要直播可改 REJECT
 
-######## ② 广告 / 埋点 / 监控黑名单 —— 必须排在白名单之后 ########
-# Bytedance / 电商广告接口
-DOMAIN-KEYWORD,ads.,REJECT-TINYGIF                 # ads5-normal-lf.zijieapi.com
-DOMAIN-KEYWORD,ads-,REJECT-TINYGIF
-DOMAIN-KEYWORD,ecombdapi,REJECT-TINYGIF            # ecom5-normal-lf.ecombdapi.com
-DOMAIN-KEYWORD,isaas,REJECT-TINYGIF                # isaas5-…
-DOMAIN-KEYWORD,polaris,REJECT-TINYGIF              # polaris5-…
-DOMAIN-KEYWORD,mssdk,REJECT-TINYGIF                # mssdk3-…
-DOMAIN-KEYWORD,bsync,REJECT-TINYGIF                # bsync3-…
-DOMAIN-KEYWORD,imapi,REJECT-TINYGIF                # imapi5-…
-DOMAIN-KEYWORD,saveu,REJECT-TINYGIF                # saveu5-…
-DOMAIN-KEYWORD,mon11-misc-lf,REJECT-TINYGIF        # 监控
-DOMAIN-KEYWORD,misc-lf,REJECT-TINYGIF
-DOMAIN-SUFFIX,zijieapi.com,REJECT-TINYGIF          # 其余字节广告
-DOMAIN-SUFFIX,ecombdapi.com,REJECT-TINYGIF
-DOMAIN-KEYWORD,ad-sign,REJECT-TINYGIF              # p3-ad-sign.byteimg.com
-DOMAIN-SUFFIX,ecombdimg.com,REJECT-TINYGIF
-DOMAIN-SUFFIX,byteimg.com,REJECT-TINYGIF           # 必要子域已在最前放行
-DOMAIN-SUFFIX,bytegecko.com,REJECT-TINYGIF         # “
-
-# 其它推广 / 弹窗
+############ ④ 大范围黑名单（剩余素材 / 监控 / 弹窗） ##############
+DOMAIN-SUFFIX,ecombdapi.com,REJECT-TINYGIF      # 兜底 ecom
+DOMAIN-SUFFIX,byteimg.com,REJECT-TINYGIF        # 必需子域已白名单
+DOMAIN-SUFFIX,bytegecko.com,REJECT-TINYGIF
+DOMAIN-SUFFIX,fqnovelpic.com,REJECT-TINYGIF     # reading-sign 已白名单
 DOMAIN,mon.toutiaocloud.com,REJECT-TINYGIF
 DOMAIN,adv.api.mucfc.com,REJECT-TINYGIF
 DOMAIN,praisewindow-sinfonlinec.ugsdk.cn,REJECT-TINYGIF
