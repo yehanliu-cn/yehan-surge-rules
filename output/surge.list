@@ -1,0 +1,17 @@
+DOMAIN-SUFFIX,audid.umeng.com,REJECT
+DOMAIN-SUFFIX,ccs.umeng.com,REJECT
+DOMAIN-SUFFIX,pro.bugly.qq.com,REJECT
+DOMAIN-SUFFIX,msg.umengcloud.com,REJECT
+DOMAIN-SUFFIX,cpc-service-square.aiclk.com,REJECT
+DOMAIN-SUFFIX,sdk-ab-config.aiclk.com,REJECT
+DOMAIN-SUFFIX,cdn.aiclk.com,REJECT
+DOMAIN-SUFFIX,update0.aiclk.com,REJECT
+DOMAIN-SUFFIX,logrcv.aiclk.com,REJECT
+DOMAIN-SUFFIX,tracelog-debug.aiclk.com,REJECT
+DOMAIN-SUFFIX,cn-tk.anythinktech.com,REJECT
+DOMAIN-SUFFIX,hmma.baidu.com,REJECT
+DOMAIN-SUFFIX,ulogs.umeng.com,REJECT
+DOMAIN-SUFFIX,ulogs.umengcloud.com,REJECT
+DOMAIN-SUFFIX,api-cfg.wtzw.com,REJECT
+DOMAIN-SUFFIX,sdk.e.qq.com,REJECT
+DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao1.com,REJECT
